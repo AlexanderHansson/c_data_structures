@@ -79,6 +79,13 @@ int main(int argc, char* argv[]) {
     cds_print_list(list, print_element);
     printf("\n");
 
+    printf("list\n");
+    cds_print_list(list, print_element);
+    cds_list_sort(list, compare_elements);
+    printf("\nsorted\n");
+    cds_print_list(list, print_element);
+    printf("\n");
+
     printf("clear list:\n");
     cds_list_clear(list);
     print_list(list);

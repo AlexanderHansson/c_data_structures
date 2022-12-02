@@ -41,7 +41,6 @@ cds_list_entry* cds_list_entry_create(void *data, size_t bytes) {
         cds_list_entry_destroy(&e, bytes);
         return e;
     }
-    printf("cpy\n");
     memcpy(e->data, data, bytes);
 
     return e;
@@ -256,5 +255,46 @@ void cds_list_remove(cds_list *list, void *data, int(*equals)(void *a, void *b))
         list->size--;
         return;
    }
+}
+
+// A silly simple n^2 sort
+// TODO: improve with mergesort?
+void cds_list_sort(cds_list *list, int(*a_gt_b)(void *a, void *b)) {
+    cds_list *temp = cds_list_create(list->data_size);
+    temp->entry = list->entry;
+
+    temp->size = list->size;
+    list->entry = NULL;
+    list->size = 0;
+    cds_list_entry *e = temp->entry;
+    while (temp->size) {
+        cds_list_entry *end = e->prev;
+        cds_list_entry *min = e;
+
+        while (e != end) {
+            if (a_gt_b(min->data, e->data)) {
+                min = e;
+            }
+            e = e->next;
+        }
+
+        if (a_gt_b(min->data, e->data)) {
+            min = e;
+            e = e->next;
+        }
+
+        cds_list_insert(list, min->data);
+
+        //cds_list_remove(temp, min);
+        min->prev->next = min->next;
+        min->next->prev = min->prev;
+        temp->size--;
+        min->prev = min;
+        min->next = min;
+
+        cds_list_entry_destroy(&min, temp->data_size);
+    }
+    temp->entry = NULL;
+    cds_list_destroy(&temp);
 }
 
