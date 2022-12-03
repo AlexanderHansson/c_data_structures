@@ -109,7 +109,7 @@ void* cds_list_peek_back(cds_list *list) {
 
 void cds_list_pop(cds_list *list) {
     list->entry = list->entry->next;
-    return cds_list_pop_back(list);
+    cds_list_pop_back(list);
 }
 
 void cds_list_pop_back(cds_list *list) {
@@ -117,7 +117,6 @@ void cds_list_pop_back(cds_list *list) {
 
     if (!head) {
         printf("ERROR [cds_list] attempting to pop empty list\n");
-        return NULL;
     }
 
     cds_list_entry *back = head->prev;
@@ -285,7 +284,6 @@ void cds_list_sort(cds_list *list, int(*a_gt_b)(void *a, void *b)) {
 
         cds_list_insert(list, min->data);
 
-        //cds_list_remove(temp, min);
         min->prev->next = min->next;
         min->next->prev = min->prev;
         temp->size--;
