@@ -47,7 +47,7 @@ void* cds_list_min(cds_list *list, int(*a_gt_b)(void *a, void *b));
 
 void cds_list_remove(cds_list *list, void *data, int(*equals)(void *a, void *b));
 
-void cds_print_list(cds_list *list, void(*print_element)(void*));
+void cds_list_print(cds_list *list, void(*print_element)(void*));
 
 void cds_list_sort(cds_list *list, int(*a_gt_b)(void *a, void *b));
 

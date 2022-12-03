@@ -51,7 +51,7 @@ int main(int argc, char* argv[]) {
     print_list(list);
 
     printf("print list:\n");
-    cds_print_list(list, print_element);
+    cds_list_print(list, print_element);
     printf("\n");
 
     int x = 3;
@@ -65,25 +65,25 @@ int main(int argc, char* argv[]) {
     printf("min: %d\n\n", *(int*)cds_list_min(list, compare_elements));
 
     printf("print list:\n");
-    cds_print_list(list, print_element);
+    cds_list_print(list, print_element);
     printf("\n");
 
     cds_list_remove(list, &x, equals);
     printf("remove %d:\n", x);
-    cds_print_list(list, print_element);
+    cds_list_print(list, print_element);
     printf("\n");
 
     x = 7;
     cds_list_remove(list, &x, equals);
     printf("remove %d:\n", x);
-    cds_print_list(list, print_element);
+    cds_list_print(list, print_element);
     printf("\n");
 
     printf("list\n");
-    cds_print_list(list, print_element);
+    cds_list_print(list, print_element);
     cds_list_sort(list, compare_elements);
     printf("\nsorted\n");
-    cds_print_list(list, print_element);
+    cds_list_print(list, print_element);
     printf("\n");
 
     printf("clear list:\n");

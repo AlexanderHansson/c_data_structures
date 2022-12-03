@@ -138,7 +138,7 @@ void* cds_list_pop_back(cds_list *list) {
     list->size--;
 }
 
-void cds_print_list(cds_list *list, void(*print_element)(void*)) {
+void cds_list_print(cds_list *list, void(*print_element)(void*)) {
     if (!list) {
         return;
     }
