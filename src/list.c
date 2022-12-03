@@ -252,8 +252,11 @@ void cds_list_remove(cds_list *list, void *data, int(*equals)(void *a, void *b))
         e->prev = e;
         cds_list_entry_destroy(&e, list->data_size);
         list->size--;
-        return;
-   }
+    }
+    if (!list->size) {
+        list->entry = NULL;
+    }
+    return;
 }
 
 // A silly simple n^2 sort

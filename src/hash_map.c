@@ -4,11 +4,9 @@
 #include <stdio.h>
 #include <string.h>
 
-cds_hash_map* cds_hash_map_create(size_t key_bytes, size_t val_bytes, size_t vec_len) {
+cds_hash_map* cds_hash_map_create(size_t vec_len) {
     cds_hash_map *m = malloc(sizeof(cds_hash_map));
 
-    m->key_bytes = key_bytes;
-    m->val_bytes = val_bytes;
     m->vec_len = vec_len;
     m->size = 0;
 
@@ -21,8 +19,8 @@ cds_hash_map* cds_hash_map_create(size_t key_bytes, size_t val_bytes, size_t vec
     return m;
 }
 
-cds_hash_map* cds_hash_map_create_default(size_t key_bytes, size_t val_bytes) {
-    return cds_hash_map_create(key_bytes, val_bytes, 25);
+cds_hash_map* cds_hash_map_create_default() {
+    return cds_hash_map_create(25);
 }
 
 
@@ -36,12 +34,11 @@ void cds_hash_map_destroy(cds_hash_map **map) {
     for (size_t i = 0; i < m->vec_len; i++) {
         cds_list *list = m->vec[i];
         cds_list_entry *e = list->entry;
-        printf("clearing list with size: %d\n", list->size);
         // destroy all key/value allocations that the pairs point to
         for (size_t j=0; j<list->size; j++) {
             cds_pair* pair = (cds_pair*) e->data;
             free(pair->key);
-            free(pair->value);
+            free(pair->val);
             e = e->next;
         }
         // all k/v's are destroyed, now destroy the list
@@ -56,46 +53,58 @@ void cds_hash_map_destroy(cds_hash_map **map) {
 
 cds_pair* cds_hash_map_find_pair(cds_hash_map *map,
                                  void *key,
-                                 unsigned int (*hash)(void *key),
-                                 int(*equals)(void *key_a, void *key_b)) {
+                                 size_t key_size,
+                                 unsigned int (*hash)(void *key, size_t key_size),
+                                 int(*equals)(void *key_a, void *key_b,
+                                              size_t key_a_size, size_t key_b_size)) {
     // compute hash
     // compute vector index
     // get list from vector and find matching pair
     // return matching pair or NULL if not found
-    unsigned int hash_code = hash(key);
+    unsigned int hash_code = hash(key, key_size);
     size_t index = hash_code % map->vec_len;
     cds_list *list = map->vec[index];
     cds_list_entry *e = list->entry;
     for (size_t i = 0; i < list->size; i++) {
         cds_pair *pair = (cds_pair*)e->data;
-        if (equals(key, pair->key)) {
+        if (key_size == pair->key_size && equals(key, pair->key, key_size, pair->key_size)) {
             return pair;
         }
+        e = e->next;
     }
     return NULL;
 }
 
 void cds_hash_map_insert(cds_hash_map *map,
                     void *key,
-                    void *value,
-                    unsigned int (*hash)(void *key),
-                    int(*equals)(void *key_a, void *key_b)) {
-    cds_pair *pair = cds_hash_map_find_pair(map, key, hash, equals);
+                    void *val,
+                    size_t key_size,
+                    size_t val_size,
+                    unsigned int (*hash)(void *key, size_t key_size),
+                    int(*equals)(void *key_a, void *key_b,
+                                 size_t key_a_size, size_t key_b_size)) {
+    cds_pair *pair = cds_hash_map_find_pair(map, key, key_size, hash, equals);
     if (pair) {
-        memcpy(pair->value, value, map->val_bytes);
+        if (val_size != pair->val_size) {
+            free(pair->val);
+            pair->val = malloc(val_size);
+        }
+        memcpy(pair->val, val, val_size);
     } else {
         // compute hash
-        unsigned int hash_code = hash(key);
+        unsigned int hash_code = hash(key, key_size);
         // compute index
         size_t index = hash_code % map->vec_len;
         // create pair
         cds_pair pair;
         // allocate space for key and value
-        pair.key = malloc(map->key_bytes);
-        pair.value = malloc(map->val_bytes);
+        pair.key = malloc(key_size);
+        pair.val = malloc(val_size);
         // assign key and value
-        memcpy(pair.key, key, map->key_bytes);
-        memcpy(pair.value, value, map->val_bytes);
+        memcpy(pair.key, key, key_size);
+        memcpy(pair.val, val, val_size);
+        pair.key_size = key_size;
+        pair.val_size = val_size;
         // insert pair into list
         cds_list_insert(map->vec[index], &pair);
         map->size+=1;
@@ -104,11 +113,42 @@ void cds_hash_map_insert(cds_hash_map *map,
 
 void* cds_hash_map_get(cds_hash_map *map,
                  void *key,
-                 unsigned int (*hash)(void *key),
-                 int(*equals)(void *key_a, void *key_b)) {
-    cds_pair *pair = cds_hash_map_find_pair(map, key, hash, equals);
+                 size_t key_size,
+                 unsigned int (*hash)(void *key, size_t key_size),
+                 int(*equals)(void *key_a, void *key_b,
+                              size_t key_a_size, size_t key_b_size)) {
+
+    cds_pair *pair = cds_hash_map_find_pair(map, key, key_size, hash, equals);
+
     if (!pair) {
+        printf("hash_map get returning NULL\n");
         return NULL;
     }
-    return pair->value;
+
+    return pair->val;
+}
+
+int _list_equals(void *a, void *b) {
+    return a == b;
+}
+
+void cds_hash_map_remove(cds_hash_map *map,
+                 void *key,
+                 size_t key_size,
+                 unsigned int (*hash)(void *key, size_t key_size),
+                 int(*equals)(void *key_a, void *key_b,
+                              size_t key_a_size, size_t key_b_size)) {
+
+    cds_pair *pair = cds_hash_map_find_pair(map, key, key_size, hash, equals);
+    if (!pair) {
+        printf("hash-map remove didn't find object\n");
+        return;
+    }
+    free(pair->key);
+    free(pair->val);
+    unsigned int hash_code = hash(key, key_size);
+    size_t index = hash_code % map->vec_len;
+    cds_list *list = map->vec[index];
+    cds_list_remove(map->vec[index], pair, _list_equals);
+    map->size--;
 }

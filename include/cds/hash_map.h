@@ -7,8 +7,6 @@
 
 /***********TYPES***********/
 struct cds_hash_map {
-    size_t key_bytes; //no bytes for key
-    size_t val_bytes; //no bytes for val
     size_t size;      //no (k,v) entries in map
     size_t vec_len;   //length of vector
     cds_list **vec;   //"array" of lists
@@ -17,21 +15,35 @@ struct cds_hash_map {
 typedef struct cds_hash_map cds_hash_map;
 /***********FUNCS***********/
 
-cds_hash_map* cds_hash_map_create(size_t key_bytes, size_t val_bytes, size_t vec_len);
+cds_hash_map* cds_hash_map_create(size_t vec_len);
 
-cds_hash_map* cds_hash_map_create_default(size_t key_bytes, size_t val_bytes);
+cds_hash_map* cds_hash_map_create_default();
 
 void cds_hash_map_destroy(cds_hash_map **map);
 
 void cds_hash_map_insert(cds_hash_map *map,
                        void *key,
-                       void *value,
-                       unsigned int (*hash)(void *key),
-                       int(*equals)(void *key_a, void *key_b));
+                       void *val,
+                       size_t key_size,
+                       size_t val_size,
+                       unsigned int (*hash)(void *key, size_t key_size),
+                       int(*equals)(void *key_a, void *key_b,
+                                    size_t key_a_size, size_t key_b_size));
 
 void* cds_hash_map_get(cds_hash_map *map,
                        void *key,
-                       unsigned int (*hash)(void *key),
-                       int(*equals)(void *key_a, void *key_b));
+                       size_t key_size,
+                       unsigned int (*hash)(void *key, size_t key_size),
+                       int(*equals)(void *key_a, void *key_b,
+                                    size_t key_a_size, size_t key_b_size));
 
+void cds_hash_map_remove(cds_hash_map *map,
+                       void *key,
+                       size_t key_size,
+                       unsigned int (*hash)(void *key, size_t key_size),
+                       int(*equals)(void *key_a, void *key_b,
+                                    size_t key_a_size, size_t key_b_size));
+
+//TODO: rebalance on insert?
+//TODO: remove?
 #endif
