@@ -1,23 +1,6 @@
 #include <stdio.h>
 #include <cds/cds.h>
 
-void print_list(cds_list *list) {
-    cds_list_entry *e = list->entry;
-    printf("list(%d): ", cds_list_size(list));
-
-    if (e) {
-        printf("peek(%d) - ", *(int*)cds_list_peek(list));
-        cds_list_entry *end = list->entry->prev;
-        while (e != end) {
-            printf("%d,", *(int*)e->data);
-            e = e->next;
-        }
-        printf("%d", *(int*)e->data);
-        printf(" - peekb(%d)", *(int*)cds_list_peek_back(list));
-    }
-    printf("\n\n");
-}
-
 void print_element(void* data) {
     printf("%d ", *(int*)data);
 }
@@ -33,24 +16,24 @@ int equals(void *a, void *b) {
 int main(int argc, char* argv[]) {
     size_t numbers[] = {5,8,1123,7,9,4,3,12};
     cds_list *list = cds_list_create(sizeof(size_t));
-    print_list(list);
+    cds_list_print(list, print_element);
 
     size_t len = sizeof(numbers) / sizeof(numbers[0]);
     for (int i = 0; i < len; i++) {
         printf("insert %d\n", numbers[i]);
         cds_list_insert(list, &numbers[i]);
-        print_list(list);
+        cds_list_print(list, print_element);
     }
 
     cds_list_pop(list);
-    printf("pop\n");
-    print_list(list);
+    printf("\npop\n");
+    cds_list_print(list, print_element);
 
     cds_list_pop_back(list);
-    printf("pop_back\n");
-    print_list(list);
+    printf("\npop_back\n");
+    cds_list_print(list, print_element);
 
-    printf("print list:\n");
+    printf("\nprint list:\n");
     cds_list_print(list, print_element);
     printf("\n");
 
@@ -88,7 +71,7 @@ int main(int argc, char* argv[]) {
 
     printf("clear list:\n");
     cds_list_clear(list);
-    print_list(list);
+    cds_list_print(list, print_element);
 
     printf("destroy list:\n");
     cds_list_destroy(&list);

@@ -35,9 +35,9 @@ void* cds_list_peek_back(cds_list *list);
 
 void* cds_list_peek(cds_list *list);
 
-void* cds_list_pop(cds_list *list);
+void cds_list_pop(cds_list *list);
 
-void* cds_list_pop_back(cds_list *list);
+void cds_list_pop_back(cds_list *list);
 
 int cds_list_contains(cds_list *list, void *data, int(*equals)(void *a, void *b));
 

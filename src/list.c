@@ -107,12 +107,12 @@ void* cds_list_peek_back(cds_list *list) {
     return list->entry->prev->data;
 }
 
-void* cds_list_pop(cds_list *list) {
+void cds_list_pop(cds_list *list) {
     list->entry = list->entry->next;
     return cds_list_pop_back(list);
 }
 
-void* cds_list_pop_back(cds_list *list) {
+void cds_list_pop_back(cds_list *list) {
     cds_list_entry *head = list->entry;
 
     if (!head) {
