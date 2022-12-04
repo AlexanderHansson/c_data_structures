@@ -44,6 +44,9 @@ void cds_hash_map_remove(cds_hash_map *map,
                        int(*equals)(void *key_a, void *key_b,
                                     size_t key_a_size, size_t key_b_size));
 
+cds_list* cds_hash_map_keys(cds_hash_map *map);
+
+void cds_hash_map_print(cds_hash_map *map, void(*print_key)(void*), void(*print_val)(void*));
+
 //TODO: rebalance on insert?
-//TODO: remove?
 #endif

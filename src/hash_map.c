@@ -51,7 +51,7 @@ void cds_hash_map_destroy(cds_hash_map **map) {
     *map = NULL;
 }
 
-cds_pair* cds_hash_map_find_pair(cds_hash_map *map,
+cds_pair* find_pair_(cds_hash_map *map,
                                  void *key,
                                  size_t key_size,
                                  unsigned int (*hash)(void *key, size_t key_size),
@@ -83,7 +83,7 @@ void cds_hash_map_insert(cds_hash_map *map,
                     unsigned int (*hash)(void *key, size_t key_size),
                     int(*equals)(void *key_a, void *key_b,
                                  size_t key_a_size, size_t key_b_size)) {
-    cds_pair *pair = cds_hash_map_find_pair(map, key, key_size, hash, equals);
+    cds_pair *pair = find_pair_(map, key, key_size, hash, equals);
     if (pair) {
         if (val_size != pair->val_size) {
             free(pair->val);
@@ -118,7 +118,7 @@ void* cds_hash_map_get(cds_hash_map *map,
                  int(*equals)(void *key_a, void *key_b,
                               size_t key_a_size, size_t key_b_size)) {
 
-    cds_pair *pair = cds_hash_map_find_pair(map, key, key_size, hash, equals);
+    cds_pair *pair = find_pair_(map, key, key_size, hash, equals);
 
     if (!pair) {
         printf("hash_map get returning NULL\n");
@@ -128,7 +128,7 @@ void* cds_hash_map_get(cds_hash_map *map,
     return pair->val;
 }
 
-int _list_equals(void *a, void *b) {
+int list_equals_(void *a, void *b) {
     return a == b;
 }
 
@@ -139,7 +139,7 @@ void cds_hash_map_remove(cds_hash_map *map,
                  int(*equals)(void *key_a, void *key_b,
                               size_t key_a_size, size_t key_b_size)) {
 
-    cds_pair *pair = cds_hash_map_find_pair(map, key, key_size, hash, equals);
+    cds_pair *pair = find_pair_(map, key, key_size, hash, equals);
     if (!pair) {
         printf("hash-map remove didn't find object\n");
         return;
@@ -149,6 +149,38 @@ void cds_hash_map_remove(cds_hash_map *map,
     unsigned int hash_code = hash(key, key_size);
     size_t index = hash_code % map->vec_len;
     cds_list *list = map->vec[index];
-    cds_list_remove(map->vec[index], pair, _list_equals);
+    cds_list_remove(map->vec[index], pair, list_equals_);
     map->size--;
+}
+
+cds_list* cds_hash_map_keys(cds_hash_map *map) {
+    cds_list *keys = cds_list_create(sizeof(void*));
+    for (size_t i = 0; i < map->vec_len; i++) {
+        cds_list *list = map->vec[i];
+        cds_list_entry *e = list->entry;
+        for (size_t j = 0; j < list->size; j++) {
+            cds_pair *p = (cds_pair*)e->data;
+            cds_list_insert(keys, p->key);
+            e = e->next;
+        }
+    }
+    return keys;
+}
+
+void cds_hash_map_print(cds_hash_map *map, void(*print_key)(void*), void(*print_val)(void*)) {
+    printf("HASHMAP\n");
+    for (size_t i = 0; i < map->vec_len; i++) {
+        cds_list *list = map->vec[i];
+        cds_list_entry *e = list->entry;
+        printf("vector %d: ", i);
+        for (size_t j = 0; j < list->size; j++) {
+            cds_pair *p = (cds_pair*)e->data;
+            print_key(p->key);
+            printf(":");
+            print_val(p->val);
+            printf(", ");
+            e = e->next;
+        }
+        printf("\n");
+    }
 }
