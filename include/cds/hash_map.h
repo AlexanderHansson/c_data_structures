@@ -48,5 +48,4 @@ cds_list* cds_hash_map_keys(cds_hash_map *map);
 
 void cds_hash_map_print(cds_hash_map *map, void(*print_key)(void*), void(*print_val)(void*));
 
-//TODO: rebalance on insert?
 #endif

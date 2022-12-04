@@ -1,5 +1,7 @@
 #include <cds/hash_map.h>
 #include <stdio.h>
+#include <time.h>
+#include <stdlib.h>
 
 unsigned int hash(void *key, size_t key_size) {
     return *(int*)key;
@@ -9,7 +11,7 @@ int equals(void *key_a, void *key_b, size_t key_a_size, size_t key_b_size) {
     int a = (*(int*)key_a);
     int b = (*(int*)key_b);
     int res = ((*(int*)key_a) == (*(int*)key_b));
-    printf("equal check: %d == %d: %d\n", a, b, res);
+    //printf("equal check: %d == %d: %d\n", a, b, res);
     return res;
 }
 
@@ -104,7 +106,27 @@ void test_insert_get_str() {
     cds_hash_map_destroy(&m);
 }
 
+void print_data(void* data) {
+    char *p = (char*) data;
+    printf("%s",p);
+}
+
+void stress_test() {
+    printf("stress_test\n");
+    cds_hash_map *m = cds_hash_map_create(1);
+    cds_hash_map_print(m, print_key, print_val);
+    char *data = "data string :)";
+    srand(time(NULL));
+    for (size_t i = 0; i < 5; i++) {
+        int x = rand();
+        cds_hash_map_insert(m, &x, &data, sizeof(x), sizeof(data), hash, equals);
+    }
+    cds_hash_map_print(m, print_key, print_val);
+    cds_hash_map_destroy(&m);
+}
+
 int main() {
     test_insert_get();
     test_insert_get_str();
+    stress_test();
 }

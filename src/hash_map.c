@@ -23,7 +23,6 @@ cds_hash_map* cds_hash_map_create_default() {
     return cds_hash_map_create(25);
 }
 
-
 void cds_hash_map_destroy(cds_hash_map **map) {
     // for each list destroy the data the pairs are using?
     // destroy the list
@@ -75,6 +74,36 @@ cds_pair* find_pair_(cds_hash_map *map,
     return NULL;
 }
 
+void rebalance_(cds_hash_map *map,
+                unsigned int (*hash)(void *key, size_t key_size),
+                int (*equals)(void *key_a, void *key_b,
+                              size_t key_a_size, size_t key_b_size)) {
+    cds_hash_map *new = cds_hash_map_create(map->size*2);
+
+    for (size_t i = 0; i < map->vec_len; i++) {
+        cds_list *list = map->vec[i];
+        cds_list_entry *e = list->entry;
+        for (size_t j = 0; j < list->size; j++) {
+            cds_pair *p = e->data;
+            cds_hash_map_insert(new,
+                                p->key, p->val,
+                                p->key_size, p->val_size,
+                                hash, equals);
+        }
+    }
+    cds_hash_map *old = malloc(sizeof(cds_hash_map));
+    old->size = map->size;
+    old->vec_len = map->vec_len;
+    old->vec = map->vec;
+
+    map->size = new->size;
+    map->vec_len = new->vec_len;
+    map->vec = new->vec;
+    free(new);
+    cds_hash_map_destroy(&old);
+
+}
+
 void cds_hash_map_insert(cds_hash_map *map,
                     void *key,
                     void *val,
@@ -108,6 +137,9 @@ void cds_hash_map_insert(cds_hash_map *map,
         // insert pair into list
         cds_list_insert(map->vec[index], &pair);
         map->size+=1;
+        if (map->size > 0.75*map->vec_len) {
+            rebalance_(map, hash, equals);
+        }
     }
 }
 
