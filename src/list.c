@@ -1,4 +1,5 @@
 #include <cds/list.h>
+#include <cds/array_functions.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>

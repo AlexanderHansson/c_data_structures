@@ -24,14 +24,19 @@ int main() {
     int arrlen = sizeof(arr)/sizeof(arr[0]);
     print_array(arr, arrlen);
     void *ret = cds_af_min((uint8_t*)arr, arrlen, sizeof(int), compare);
+
     if (ret) {
         int min = *(int*)ret;
         printf("min: %d\n", min);
     }
+
     ret = cds_af_max((uint8_t*)arr, arrlen, sizeof(int), compare);
     if (ret) {
         int max = *(int*)ret;
         printf("max: %d\n", max);
     }
+    printf("sorted\n");
+    cds_af_sort((uint8_t*)arr, arrlen, sizeof(int), compare);
+    print_array(arr, arrlen);
 }
 
