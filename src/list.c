@@ -70,8 +70,11 @@ void cds_list_clear(cds_list *list) {
 }
 
 void cds_list_destroy(cds_list **list) {
+    printf("clear list\n");
     cds_list_clear(*list);
+    printf("free list\n");
     free(*list);
+    printf("null list\n");
     *list = NULL;
 }
 
@@ -128,7 +131,6 @@ void cds_list_pop_back(cds_list *list) {
 
     if (list->size == 1) {
         list->entry = NULL;
-        list->size = 0;
     }
 
     // cleanup back

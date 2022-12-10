@@ -26,7 +26,8 @@ add_library(${CDS_NAME} SHARED ${CDS_SRC})
 # see https://cmake.org/cmake/help/latest/command/target_include_directories.html
 
 # build interface, install interface
-target_include_directories(${CDS_NAME} PUBLIC
+target_include_directories(${CDS_NAME} BEFORE
+    PUBLIC
     ${PROJECT_SOURCE_DIR}/include)
 
 # linked libraries
