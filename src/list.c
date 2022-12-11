@@ -70,11 +70,8 @@ void cds_list_clear(cds_list *list) {
 }
 
 void cds_list_destroy(cds_list **list) {
-    printf("clear list\n");
     cds_list_clear(*list);
-    printf("free list\n");
     free(*list);
-    printf("null list\n");
     *list = NULL;
 }
 
