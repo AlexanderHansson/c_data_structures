@@ -93,10 +93,6 @@ int cds_str_rfind(const char *str, const char *pattern, int from) {
         from = strlen - pattern_len;
     }
 
-
-
-
-
     for (index = from; index >= until; index -= 1) {
         if (*(str+index) != *pattern) {
             continue;
@@ -183,13 +179,11 @@ const char* cds_str_read(const char *str, const char *fmt, ...) {
         }
     }
 
-
     cds_list_entry *e = fmt_specifiers->entry;
     for (size_t i = 0; i < fmt_specifiers->size; i++) {
 
         e = e->next;
     }
-
 
     int prefix_idx = 0;       // index of prefix start in fmt
     int spec_idx = -2;         // index of specifier in fmt
@@ -209,10 +203,6 @@ const char* cds_str_read(const char *str, const char *fmt, ...) {
         } else {
             end_idx = fmt_len;
         }
-
-
-
-
 
         char *prefix = cds_str_substr(fmt, prefix_idx, spec_idx);
         char *postfix = cds_str_substr(fmt, spec_idx+2, end_idx);
