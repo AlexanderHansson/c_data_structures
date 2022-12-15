@@ -331,3 +331,68 @@ const char* cds_str_sorted(const char *str) {
 }
 
 
+size_t find_first_non_space_(const char *str) {
+    size_t i = 0;
+    if (str[i] != ' ') return 0;
+    size_t len = cds_str_len(str);
+    while (str[++i] == ' ' && i < len);
+    return i;
+}
+
+size_t find_last_non_space_(const char *str) {
+    size_t i = cds_str_len(str) - 1;
+    if (str[i] != ' ') return 0;
+    while (str[--i] == ' ' && i>0);
+    return i;
+}
+
+const char* cds_str_lstrip(const char *str) {
+    if (!str) {
+        return NULL;
+    }
+    size_t len = cds_str_len(str);
+
+    size_t start = find_first_non_space_(str);
+
+    if (start >= len) {
+        return NULL;
+    }
+
+    const char *p = str + start;
+    size_t newlen = cds_str_len(p);
+    char *newstr = malloc(newlen+1);
+    memcpy(newstr, p, newlen);
+    newstr[newlen] = '\0';
+    return newstr;
+}
+
+const char* cds_str_rstrip(const char *str) {
+    if (!str) {
+        return NULL;
+    }
+
+    size_t end = find_last_non_space_(str);
+
+    if (end <= 0) {
+        return NULL;
+    }
+    end = end + 1;
+    char *newstr = malloc(end+1);
+    memcpy(newstr, str, end);
+    newstr[end] = '\0';
+    return newstr;
+}
+
+const char* cds_str_strip(const char *str) {
+    if (!str) {
+        return NULL;
+    }
+    size_t start = find_first_non_space_(str);
+    size_t end = find_last_non_space_(str) + 1;
+    size_t newlen = end-start;
+    char *newstr = malloc(newlen + 1);
+    memcpy(newstr, &str[start], newlen);
+    newstr[newlen] = '\0';
+    return newstr;
+}
+

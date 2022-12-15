@@ -34,5 +34,17 @@ int main() {
     const char *sorted = cds_str_sorted(str);
     printf("sorted str:\n%s\n",sorted);
     free((void*)sorted);
+
+    char *strippable = "  Crocodiles are pink creatures      ";
+    printf("stripping: '%s'\n", strippable);
+    const char *lstr = cds_str_lstrip(strippable);
+    const char *rstr = cds_str_rstrip(strippable);
+    const char *lrstr = cds_str_strip(strippable);
+    printf("lstr: '%s'\n", lstr);
+    printf("rstr: '%s'\n", rstr);
+    printf("lrstr: '%s'\n", lrstr);
+    free((void*)lstr);
+    free((void*)rstr);
+    free((void*)lrstr);
     return 0;
 }

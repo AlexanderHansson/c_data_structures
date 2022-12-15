@@ -55,7 +55,11 @@ const char* cds_str_replace(const char *str, const char *search, const char *rep
 
 const char* cds_str_sorted(const char *str);
 
+const char* cds_str_lstrip(const char *str);
 
+const char* cds_str_rstrip(const char *str);
+
+const char *cds_str_strip(const char *str);
 
 #endif
 
