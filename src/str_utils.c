@@ -1,5 +1,6 @@
 #include <cds/str_utils.h>
 #include <cds/list.h>
+#include <cds/array_functions.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -22,7 +23,6 @@ int cds_str_find(const char *str, const char *pattern, int from, int until) {
     int strlen = 0;
 
     if (!str) {
-        printf("returning -1\n");
         return -1;
     }
 
@@ -31,7 +31,6 @@ int cds_str_find(const char *str, const char *pattern, int from, int until) {
 
     if ((!pattern) || (*pattern == '\0')) {
         //strlen
-        printf("returning strlen\n");
         return strlen;
     }
 
@@ -44,9 +43,6 @@ int cds_str_find(const char *str, const char *pattern, int from, int until) {
         until = strlen - pattern_len;
     }
 
-    printf("trying to find '%s' in '%s'\n", pattern, str);
-    printf("from: %d, until: %d\n", from, until);
-    printf("strlen %d, patternlen: %d\n", strlen, pattern_len);
     for (index = from; index <= until; index += 1) {
         if (*(str+index) != *pattern) {
             continue;
@@ -97,9 +93,9 @@ int cds_str_rfind(const char *str, const char *pattern, int from) {
         from = strlen - pattern_len;
     }
 
-    //printf("trying to rfind '%s' in '%s'\n", pattern, str);
-    //printf("backwards from: %d, until: %d\n", from, until);
-    //printf("strlen %d, patternlen: %d\n", strlen, pattern_len);
+
+
+
 
     for (index = from; index >= until; index -= 1) {
         if (*(str+index) != *pattern) {
@@ -125,7 +121,7 @@ char* cds_str_substr(const char *str, size_t start, size_t end) {
     if (end<=start || !str)
         return NULL;
     size_t n_bytes = end-start;
-    //printf("creating substring of %d bytes\n",n_bytes);
+
     char *result = malloc(n_bytes+1);
     memcpy(result, (str+start), n_bytes);
     result[n_bytes] = '\0';
@@ -149,7 +145,7 @@ void set_param_(va_list args, const char* str, char specifier) {
             sscanf(str, "%d", i);
             break;
         default:
-            //printf("UNSUPPORTED SPECIFIER: %c\n", specifier);
+
     }
 
 }
@@ -187,13 +183,13 @@ const char* cds_str_read(const char *str, const char *fmt, ...) {
         }
     }
 
-    //printf("specifiers size:%d\n", fmt_specifiers->size);
+
     cds_list_entry *e = fmt_specifiers->entry;
     for (size_t i = 0; i < fmt_specifiers->size; i++) {
-        //printf("%d,", *(int*)e->data);
+
         e = e->next;
     }
-    //printf("\n");
+
 
     int prefix_idx = 0;       // index of prefix start in fmt
     int spec_idx = -2;         // index of specifier in fmt
@@ -206,7 +202,7 @@ const char* cds_str_read(const char *str, const char *fmt, ...) {
         prefix_idx = spec_idx+2;
         spec_idx = *(int*)cds_list_peek(fmt_specifiers);
         cds_list_pop(fmt_specifiers);
-        //printf("specifiers popped:%d\n", fmt_specifiers->size);
+
 
         if (fmt_specifiers->size) {
             end_idx = *(int*)cds_list_peek(fmt_specifiers);
@@ -214,30 +210,24 @@ const char* cds_str_read(const char *str, const char *fmt, ...) {
             end_idx = fmt_len;
         }
 
-        //printf("prefix_idx: %d\n",prefix_idx);
-        //printf("spec_idx: %d\n",spec_idx);
-        //printf("end_idx: %d\n",end_idx);
-        //printf("calling substr\n");
+
+
+
+
         char *prefix = cds_str_substr(fmt, prefix_idx, spec_idx);
         char *postfix = cds_str_substr(fmt, spec_idx+2, end_idx);
-        //printf("done substr\n");
-        //printf("prefix: '%s'\n", prefix);
-        //printf("postfix: '%s'\n", postfix);
 
         // now we need to find pre/postfix in actual string
         // then we take the "string" between them
 
         str_postfix_pos = cds_str_find(str, postfix, 0, -1);
-        //printf("postfix pos: %d\n", str_postfix_pos);
         // found potential postfix
         // now search backwards for prefix
         // if prefix is not found, search next postfix
         str_prefix_pos = cds_str_rfind(str, prefix, str_postfix_pos - cds_str_len(prefix));
-        //printf("prefix pos: %d\n", str_prefix_pos);
 
         while(str_prefix_pos == -1) {
             str_postfix_pos = cds_str_find(str, postfix, str_postfix_pos + 1, -1);
-            //printf("postfix pos: %d\n", str_postfix_pos);
             if (str_postfix_pos == -1) {
                 char *fmt_str = cds_str_substr(fmt, prefix_idx, end_idx);
                 printf("DID NOT FIND ANY MATCH FOR '%s'\n", fmt_str);
@@ -254,11 +244,10 @@ const char* cds_str_read(const char *str, const char *fmt, ...) {
                 return str + latest_find_end;
             }
             str_prefix_pos = cds_str_rfind(str, prefix, str_postfix_pos - cds_str_len(prefix));
-            //printf("prefix pos: %d\n", str_prefix_pos);
         }
-        //printf("calling substr2\n");
+
         char *result = cds_str_substr(str, str_prefix_pos + cds_str_len(prefix), str_postfix_pos);
-        //printf("done substr2\n");
+
         latest_find_end = str_postfix_pos;
         set_param_(args, result, *(fmt+spec_idx+1));
         free(prefix);
@@ -280,15 +269,75 @@ size_t cds_str_count(const char *str, const char *format) {
         return 0;
     }
     int i = -1;
+    i = cds_str_find(str, format, i+1, -1);
     size_t total = 0;
     while (i  >= 0) {
+        total++;
         i = cds_str_find(str, format, i+1, -1);
-        printf("i:%d\n", i);
-        if (i>=0) {
-            total++;
-        }
     }
     return total;
+}
+
+cds_list* cds_str_split(const char *str, const char *format) {
+    cds_list *result = cds_list_create(sizeof(char*));
+    size_t len = cds_str_len(str);
+    size_t fmt_len = cds_str_len(format);
+
+    size_t start = 0;
+    size_t end = -1;
+    end = cds_str_find(str, format, start, len);
+    while (end != -1) {
+        char *substr = cds_str_substr(str, start, end);
+        cds_list_insert(result, &substr);
+        start = end + fmt_len;
+        end = cds_str_find(str, format, start, len);
+    }
+    char *substr = cds_str_substr(str, start, len);
+    cds_list_insert(result, &substr);
+    return result;
+}
+
+const char* cds_str_replace(const char *str, const char *search, const char *replace) {
+    size_t strlen = cds_str_len(str);
+    size_t searchlen = cds_str_len(search);
+    size_t replacelen = cds_str_len(replace);
+    size_t n_words = cds_str_count(str, search);
+
+    size_t new_len = strlen + (n_words * (replacelen - searchlen));
+    char *newstr = malloc(new_len+1);
+
+    size_t start = 0;
+    size_t end = -1;
+    char *p = newstr;
+    end = cds_str_find(str, search, start, strlen);
+    while (end != -1) {
+        size_t n_bytes = end-start;
+        memcpy(p, &str[start], n_bytes);
+        p += n_bytes;
+        memcpy(p, replace, replacelen);
+        p += replacelen;
+        start = end + searchlen;
+        end = cds_str_find(str, search, start, strlen);
+    }
+    memcpy(p, &str[start], strlen-start);
+    newstr[new_len] = '\0';
+    return newstr;
+}
+
+int compare_chars_(uint8_t *a, uint8_t *b) {
+    return *(char*)a > *(char*)b;
+}
+
+const char* cds_str_sorted(const char *str) {
+    size_t strlen = cds_str_len(str);
+    if (strlen<=0) {
+        return NULL;
+    }
+    char *sorted = malloc(strlen+1);
+    memcpy(sorted, str, strlen);
+    sorted[strlen] = '\0';
+    cds_af_sort((uint8_t*)sorted, strlen, sizeof(char), compare_chars_);
+    return sorted;
 }
 
 

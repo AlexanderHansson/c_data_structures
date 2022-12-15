@@ -47,14 +47,13 @@ char* cds_str_substr(const char *str, size_t start, size_t end);
 */
 const char* cds_str_read(const char *str, const char *format, ...);
 
-
-
-//TODO
-cds_list* cds_str_split(const char *str, const char *format);
-
 size_t cds_str_count(const char *str, const char *format);
 
-char* cds_str_sorted(const char *str);
+cds_list* cds_str_split(const char *str, const char *format);
+
+const char* cds_str_replace(const char *str, const char *search, const char *replace);
+
+const char* cds_str_sorted(const char *str);
 
 
 
